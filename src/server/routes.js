@@ -40,10 +40,12 @@ function requireAuth(req, res, next) {
     }
     next();
 }
-
+// correción: Implementar sanitización de entrada para prevenir XSS en la búsqueda
 function search(req, res, next) {
+    var he = require('he');
     console.log(req.query.searchTerm);
-    res.status(200).send(req.query.searchTerm);
+    var sanitized = he.encode(req.query.searchTerm || '');
+    res.status(200).send(sanitized);
 }
 
 function getProfile(req, res, next) {

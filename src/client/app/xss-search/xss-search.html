@@ -15,7 +15,7 @@
                             <hr>
                             <label>Result:</label>
                             <div>
-                                <pre ng-bind-html="vm.searchResults">
+                                <pre ng-bind="vm.searchResults"></pre> //correción: Mostrar resultados sin confiar como HTML para evitar XSS
                                 </pre>
                             </div>
                         </div>
