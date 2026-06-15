@@ -1,6 +1,8 @@
 var router = require('express').Router();
 var four0four = require('./utils/404')();
 var data = require('./data');
+//Se importa el logger formal para registro de eventos de seguridad
+var logger = require('./logger');
 data.profile = {};
 
 router.get('/people', getPeople);
@@ -37,20 +39,22 @@ function getProfile(req, res, next) {
 
 function updateProfile(req, res, next) {
     var user = req.cookies.userAuthToken;
-    console.log('User Requesting Update: ', user);
-    console.log('Updating user profile from: ', data.profile[user]);
-    console.log('Updating user profile to: ', req.body);
-    console.log('User Found: ', user);
+
+    // RS-06: Registro formal de modificación de perfil con IP y usuario
+    logger.info('Actualizacion de perfil', {
+        event: 'UPDATE_PROFILE',
+        ip: req.ip,
+        token: user,
+        cambios: req.body
+    });
 
     data.profile[user] = req.body;
-    console.log('Updated profile for user: ', user);
-
     res.status(200).send(data.profile[user]);
 }
 
 function login(req, res, next) {
     var randomNumber = Math.random().toString();
-    randomNumber = '35592211433686316';//randomNumber.substring(2, randomNumber.length);
+    randomNumber = '35592211433686316';
 
     data.randomNumber = randomNumber;
     data.profile[randomNumber] = {
@@ -58,13 +62,25 @@ function login(req, res, next) {
         lastName: 'Bob'
     };
 
-    console.log('Logged in user: ', data.randomNumber);
+    // Registro formal de evento de login con IP y timestamp
+    logger.info('Login exitoso', {
+        event: 'LOGIN',
+        ip: req.ip,
+        token: randomNumber
+    });
+
     res.cookie('userAuthToken', randomNumber, {maxAge: 3600000, path: '/'});
     res.status(200).send(randomNumber);
 }
 
 function logout(req, res, next) {
-    console.log('Logged out user: ', data.randomNumber);
+    //Registro formal de evento de logout con IP y timestamp
+    logger.info('Logout de usuario', {
+        event: 'LOGOUT',
+        ip: req.ip,
+        token: data.randomNumber
+    });
+
     data.randomNumber = undefined;
     res.clearCookie('userAuthToken');
     res.status(200).send('logged out!');
