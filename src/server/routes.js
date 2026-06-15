@@ -9,13 +9,23 @@ router.get('/person/:id', getPerson);
 router.post('/user/login', login);
 router.post('/user/logout', logout);
 
-router.post('/user/profile/', updateProfile);
+// Se agrega verificación CSRF antes de actualizar perfil
+router.post('/user/profile/', verifyCsrf, updateProfile);
 router.get('/user/profile/', getProfile);
 
 router.get('/search', search);
 
 router.get('/*', four0four.notFoundMiddleware);
-
+// Middleware que valida el token CSRF en peticiones POST
+function verifyCsrf(req, res, next) {
+    var tokenCookie = req.cookies.csrfToken;
+    var tokenHeader = req.headers['x-csrf-token'];
+    // Se compara el token del header con el de la cookie
+    if (!tokenHeader || tokenHeader !== tokenCookie) {
+        return res.status(403).json({ error: 'Token CSRF inválido o ausente.' });
+    }
+    next();
+}
 module.exports = router;
 
 //////////////

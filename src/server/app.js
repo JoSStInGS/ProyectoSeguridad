@@ -17,6 +17,19 @@ app.use(favicon(__dirname + '/favicon.ico'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
+// Middleware que genera token CSRF y lo envía en cookie al cliente
+var crypto = require('crypto');
+app.use(function(req, res, next) {
+    // Si no existe token CSRF, se genera uno nuevo
+    if (!req.cookies.csrfToken) {
+        var token = crypto.randomBytes(32).toString('hex');
+        res.cookie('csrfToken', token, { path: '/' });
+        req.csrfToken = token;
+    } else {
+        req.csrfToken = req.cookies.csrfToken;
+    }
+    next();
+});
 app.use(logger('dev'));
 
 // app.use(function(req, res, next) {
