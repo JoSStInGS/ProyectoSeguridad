@@ -1,4 +1,13 @@
 var router = require('express').Router();
+var rateLimit = require('express-rate-limit');
+
+var loginLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutos
+    max: 3, // máximo 5 intentos
+    message: { error: 'Demasiados intentos de login. Intente de nuevo en 5 minutos.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
 var four0four = require('./utils/404')();
 var data = require('./data');
 data.profile = {};
@@ -6,7 +15,8 @@ data.profile = {};
 router.get('/people', getPeople);
 router.get('/person/:id', getPerson);
 
-router.post('/user/login', login);
+// RS-01: Rate limiting en login para prevenir fuerza bruta (T-01)
+router.post('/user/login', loginLimiter, login);
 router.post('/user/logout', logout);
 
 // RS-08: Rutas protegidas con middleware de autenticación
