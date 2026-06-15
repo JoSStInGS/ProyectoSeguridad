@@ -9,8 +9,9 @@ router.get('/person/:id', getPerson);
 router.post('/user/login', login);
 router.post('/user/logout', logout);
 
-router.post('/user/profile/', updateProfile);
-router.get('/user/profile/', getProfile);
+// RS-08: Rutas protegidas con middleware de autenticación
+router.post('/user/profile/', requireAuth, updateProfile);
+router.get('/user/profile/', requireAuth, getProfile);
 
 router.get('/search', search);
 
@@ -20,11 +21,17 @@ module.exports = router;
 
 //////////////
 
-function search(req, res, next) {
-    // This would then query against a datastore for the search term
-    // and return the results with the search term used for the query
+// Middleware de autenticación (RS-08 / T-11)
+// Verifica que la cookie userAuthToken corresponde a una sesión activa en el servidor
+function requireAuth(req, res, next) {
+    var token = req.cookies.userAuthToken;
+    if (!token || !data.profile[token]) {
+        return res.status(401).json({ error: 'No autorizado. Debe iniciar sesión.' });
+    }
+    next();
+}
 
-    // For demo purposes we're just going to send back the search term received
+function search(req, res, next) {
     console.log(req.query.searchTerm);
     res.status(200).send(req.query.searchTerm);
 }
@@ -40,17 +47,14 @@ function updateProfile(req, res, next) {
     console.log('User Requesting Update: ', user);
     console.log('Updating user profile from: ', data.profile[user]);
     console.log('Updating user profile to: ', req.body);
-    console.log('User Found: ', user);
-
     data.profile[user] = req.body;
     console.log('Updated profile for user: ', user);
-
     res.status(200).send(data.profile[user]);
 }
 
 function login(req, res, next) {
     var randomNumber = Math.random().toString();
-    randomNumber = '35592211433686316';//randomNumber.substring(2, randomNumber.length);
+    randomNumber = '35592211433686316';
 
     data.randomNumber = randomNumber;
     data.profile[randomNumber] = {
