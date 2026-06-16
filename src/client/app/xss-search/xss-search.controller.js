@@ -32,7 +32,7 @@
                     // Intentionally trusting as HTML for demonstration purposes
                     console.log('Search response: ', response);
                     $location.hash(response);
-                    vm.searchResults = $sce.trustAsHtml(response);
+                    vm.searchResults = response; //correción: Mostrar resultados sin confiar como HTML para evitar XSS
                 })
                 .catch(function(error) {
                     logger.error(error);
