@@ -1,6 +1,7 @@
 /*jshint node:true*/
 'use strict';
 
+var logger = require('./logger'); //correccion: Se importa el logger para su uso en el servidor
 var express = require('express');
 var app = express();
 // app.disable('x-powered-by');
@@ -25,6 +26,17 @@ app.use(logger('dev'));
 // });
 
 app.use('/api', require('./routes'));
+// Middleware global de manejo de errores
+// Registra el detalle en el log y devuelve mensaje genérico al cliente
+app.use(function(err, req, res, next) {
+    logger.error('Error interno del servidor', {
+        event: 'SERVER_ERROR',
+        ip: req.ip,
+        url: req.url,
+        error: err.message
+    });
+    res.status(500).json({ error: 'Ha ocurrido un error interno. Contacte al administrador.' });
+});
 
 console.log('About to crank up node');
 console.log('PORT=' + port);
