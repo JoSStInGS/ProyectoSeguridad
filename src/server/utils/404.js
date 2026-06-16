@@ -1,4 +1,7 @@
 module.exports = function () {
+    // RS-07: Se importa el logger para registrar errores internamente
+    var logger = require('../logger');
+
     var service = {
         notFoundMiddleware: notFoundMiddleware,
         send404: send404
@@ -10,14 +13,19 @@ module.exports = function () {
     }
 
     function send404(req, res, description) {
-        var data = {
-            status: 404,
-            message: 'Not Found',
+        // RS-07: Se registra el detalle del error en el log interno
+        // sin exponerlo al cliente
+        logger.warn('Recurso no encontrado', {
+            event: 'NOT_FOUND',
+            url: req.url,
             description: description,
-            url: req.url
-        };
+            ip: req.ip
+        });
+
+        // RS-07: Se devuelve mensaje genérico al cliente
+        // sin revelar detalles internos del sistema
         res.status(404)
-            .send(data)
+            .send({ status: 404, message: 'Recurso no encontrado.' })
             .end();
     }
 };
